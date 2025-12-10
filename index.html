@@ -8,12 +8,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="記帳簿">
     
-    <!-- 設定 App 圖示 (iOS & Desktop) -->
-    <!-- 這裡使用 ui-avatars 生成一個藍底白字的 "帳" 字圖示，您可以將 href 換成自己的圖片網址 -->
-    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=帳&background=2563eb&color=fff&rounded=true&bold=true&size=512">
-    <link rel="icon" type="image/png" href="https://ui-avatars.com/api/?name=帳&background=2563eb&color=fff&rounded=true&bold=true&size=512">
+    <!-- 設定 App 圖示 (更換為 iOS 風格漸層藍底白圖示) -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='%232563eb'/%3E%3Cpath d='M368 160H144c-26.5 0-48 21.5-48 48v224h272V208c0-26.5-21.5-48-48-48z' fill='%2360a5fa'/%3E%3Cpath d='M368 128H144c-26.5 0-48 21.5-48 48v16h272v-16c0-26.5-21.5-48-48-48z' fill='%2393c5fd'/%3E%3Cpath d='M368 352H144c-17.7 0-32-14.3-32-32s14.3-32 32-32h224v64z' fill='%23ffffff'/%3E%3Cpath d='M320 320a16 16 0 1 1 0 32 16 16 0 1 1 0-32z' fill='%232563eb'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='%232563eb'/%3E%3Cpath d='M368 160H144c-26.5 0-48 21.5-48 48v224h272V208c0-26.5-21.5-48-48-48z' fill='%2360a5fa'/%3E%3Cpath d='M368 128H144c-26.5 0-48 21.5-48 48v16h272v-16c0-26.5-21.5-48-48-48z' fill='%2393c5fd'/%3E%3Cpath d='M368 352H144c-17.7 0-32-14.3-32-32s14.3-32 32-32h224v64z' fill='%23ffffff'/%3E%3Cpath d='M320 320a16 16 0 1 1 0 32 16 16 0 1 1 0-32z' fill='%232563eb'/%3E%3C/svg%3E">
 
-    <title>個人會計記帳系統 </title>
+    <title>個人會計記帳系統 V2023</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
@@ -31,14 +30,19 @@
         }
         .overflow-y-auto { -webkit-overflow-scrolling: touch; }
         
-        /* 導航欄樣式 - 更加圓潤 */
-        .tab-active { 
-            color: #0f172a; /* Slate-900 */
-            font-weight: 700;
-            background-color: #e2e8f0;
-            border-radius: 12px;
+        /* 導航欄樣式 - 回歸經典 iOS 風格 (移除背景色塊) */
+        .tab-btn {
+            position: relative;
+            transition: all 0.2s ease;
         }
-        .tab-inactive { color: #94a3b8; font-weight: 500; } 
+        .tab-active { 
+            color: #2563eb; /* Blue-600 */
+            font-weight: 600;
+        }
+        .tab-inactive { 
+            color: #94a3b8; /* Slate-400 */
+            font-weight: 500; 
+        } 
         
         .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
 
@@ -71,11 +75,11 @@
         const { useState, useMemo, useEffect, useRef } = React;
         
         const Icons = {
-            BookOpen: () => <i data-lucide="book-open" className="w-5 h-5"></i>,
-            PieChart: () => <i data-lucide="pie-chart" className="w-5 h-5"></i>,
-            Settings: () => <i data-lucide="settings" className="w-5 h-5"></i>,
-            List: () => <i data-lucide="list" className="w-5 h-5"></i>,
-            Plus: () => <i data-lucide="plus" className="w-4 h-4"></i>,
+            BookOpen: () => <i data-lucide="book-open" className="w-6 h-6"></i>,
+            PieChart: () => <i data-lucide="pie-chart" className="w-6 h-6"></i>,
+            Settings: () => <i data-lucide="settings" className="w-6 h-6"></i>,
+            List: () => <i data-lucide="list" className="w-6 h-6"></i>,
+            Plus: () => <i data-lucide="plus" className="w-6 h-6"></i>, // 導航欄圖示稍微放大
             Trash: () => <i data-lucide="trash-2" className="w-4 h-4"></i>,
             ArrowRight: () => <i data-lucide="arrow-right" className="w-4 h-4 inline mx-2"></i>,
             Save: () => <i data-lucide="save" className="w-4 h-4"></i>,
@@ -777,20 +781,20 @@
                         {activeTab === 'settings' && renderSettings()}
                     </div>
 
-                    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-2 pb-6 safe-area-bottom flex justify-between items-center shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)] z-20">
-                        <button onClick={() => setActiveTab('journal')} className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'journal' ? 'tab-active' : 'tab-inactive'}`}>
+                    <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 px-6 py-2 pb-6 safe-area-bottom flex justify-between items-center shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)] z-20">
+                        <button onClick={() => setActiveTab('journal')} className={`flex flex-col items-center gap-1 tab-btn ${activeTab === 'journal' ? 'tab-active' : 'tab-inactive'}`}>
                             <div className="p-1"><Icons.Plus /></div>
                             <span className="text-[10px]">記帳</span>
                         </button>
-                        <button onClick={() => setActiveTab('reports')} className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'reports' ? 'tab-active' : 'tab-inactive'}`}>
+                        <button onClick={() => setActiveTab('reports')} className={`flex flex-col items-center gap-1 tab-btn ${activeTab === 'reports' ? 'tab-active' : 'tab-inactive'}`}>
                              <div className="p-1"><Icons.BookOpen /></div>
                             <span className="text-[10px]">報表</span>
                         </button>
-                        <button onClick={() => setActiveTab('accounts')} className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'accounts' ? 'tab-active' : 'tab-inactive'}`}>
+                        <button onClick={() => setActiveTab('accounts')} className={`flex flex-col items-center gap-1 tab-btn ${activeTab === 'accounts' ? 'tab-active' : 'tab-inactive'}`}>
                              <div className="p-1"><Icons.List /></div>
                             <span className="text-[10px]">科目</span>
                         </button>
-                        <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'settings' ? 'tab-active' : 'tab-inactive'}`}>
+                        <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center gap-1 tab-btn ${activeTab === 'settings' ? 'tab-active' : 'tab-inactive'}`}>
                              <div className="p-1"><Icons.Settings /></div>
                             <span className="text-[10px]">設定</span>
                         </button>
