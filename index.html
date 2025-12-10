@@ -7,62 +7,52 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="記帳簿">
-    <title>個人會計記帳系統 </title>
+    <title>個人會計記帳系統 V2023</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <!-- 使用最新版 Babel 以支援 JSX 語法 -->
+    <!-- 使用最新版 Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
         body { 
             font-family: 'Noto Sans TC', sans-serif; 
-            background-color: #f8fafc; /* Slate-50: 極淺的灰藍色背景 */
+            background-color: #f8fafc; 
             -webkit-tap-highlight-color: transparent; 
-            color: #475569; /* Slate-600: 柔和的深灰文字 */
+            color: #475569; 
         }
         .overflow-y-auto { -webkit-overflow-scrolling: touch; }
         
-        /* 導航欄樣式優化 - 極簡灰 */
+        /* 導航欄樣式 - 更加圓潤 */
         .tab-active { 
-            color: #334155; /* Slate-700 */
+            color: #0f172a; /* Slate-900 */
             font-weight: 700;
-            position: relative;
+            background-color: #e2e8f0;
+            border-radius: 12px;
         }
-        .tab-active::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
-            background-color: #334155;
-            border-radius: 50%;
-        }
-        .tab-inactive { color: #94a3b8; font-weight: 400; } /* Slate-400 */
+        .tab-inactive { color: #94a3b8; font-weight: 500; } 
         
         .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
 
-        /* 莫蘭迪色系定義 */
-        /* 資產/收入 (紅) -> 改用 Rose-500 (乾燥玫瑰) */
-        .text-asset { color: #f43f5e; } 
-        .bg-asset { background-color: #fff1f2; color: #be123c; } /* Rose-50 bg, Rose-700 text */
+        /* --- 和諧配色定義 (Blue & Amber) --- */
         
-        /* 負債/支出 (綠) -> 改用 Teal-500 (湖水綠) */
-        .text-liab { color: #14b8a6; } 
-        .bg-liab { background-color: #f0fdfa; color: #0f766e; } /* Teal-50 bg, Teal-700 text */
+        /* 資產/收入: 藍色系 (穩定、流入) */
+        .text-asset { color: #2563eb; } /* Blue-600 */
+        .bg-asset { background-color: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; } /* Blue-50 */
+        
+        /* 負債/支出: 橘色系 (溫暖、流出) */
+        .text-liab { color: #d97706; } /* Amber-600 */
+        .bg-liab { background-color: #fffbeb; color: #92400e; border: 1px solid #fef3c7; } /* Amber-50 */
 
-        /* 輸入框聚焦效果 - 柔和灰 */
+        /* 輸入框聚焦效果 */
         input:focus, select:focus {
             outline: none;
-            border-color: #94a3b8;
-            box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.2);
+            border-color: #cbd5e1;
+            box-shadow: 0 0 0 3px rgba(226, 232, 240, 0.6);
         }
         
-        /* 卡片陰影優化 */
         .card-shadow {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
         }
@@ -210,7 +200,7 @@
                 return '其他';
             };
 
-            // 優化後的樣式函數 - 莫蘭迪標籤
+            // 優化後的樣式函數 - 藍橘配色
             const getAccountStyle = (accountName) => {
                 const type = getAccountType(accountName);
                 switch (type) {
@@ -475,7 +465,7 @@
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                     <label className="text-xs font-medium text-slate-400 ml-1 flex items-center gap-1">
-                                        <span className="w-2 h-2 rounded-full bg-rose-400"></span> 借方 (流入/費用)
+                                        <span className="w-2 h-2 rounded-full bg-blue-500"></span> 借方 (流入/費用)
                                     </label>
                                     <select value={drAccount} onChange={e => setDrAccount(e.target.value)} className="w-full p-3 bg-slate-50 border border-transparent rounded-xl text-sm appearance-none transition-all focus:bg-white" required>
                                         <option value="">選擇科目...</option>
@@ -487,7 +477,7 @@
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-xs font-medium text-slate-400 ml-1 flex items-center gap-1">
-                                        <span className="w-2 h-2 rounded-full bg-teal-400"></span> 貸方 (流出/收入)
+                                        <span className="w-2 h-2 rounded-full bg-amber-500"></span> 貸方 (流出/收入)
                                     </label>
                                     <select value={crAccount} onChange={e => setCrAccount(e.target.value)} className="w-full p-3 bg-slate-50 border border-transparent rounded-xl text-sm appearance-none transition-all focus:bg-white" required>
                                         <option value="">選擇科目...</option>
@@ -539,7 +529,7 @@
                                         <div className="flex items-center justify-between gap-3">
                                             <input type="number" value={editAmount} onChange={e => setEditAmount(e.target.value)} className="w-full border p-2 rounded-lg text-sm text-right font-mono" placeholder="金額" />
                                             <div className="flex gap-2">
-                                                <button onClick={() => saveEditing(entry.id)} className="bg-teal-50 text-teal-600 p-2 rounded-lg"><Icons.Check /></button>
+                                                <button onClick={() => saveEditing(entry.id)} className="bg-slate-100 text-slate-600 p-2 rounded-lg"><Icons.Check /></button>
                                                 <button onClick={cancelEditing} className="bg-slate-100 text-slate-500 p-2 rounded-lg"><Icons.X /></button>
                                             </div>
                                         </div>
@@ -583,13 +573,13 @@
                             <h3 className="font-bold text-slate-700 flex items-center gap-2"><Icons.BookOpen /> 資產負債表</h3>
                         </div>
                         <div className="space-y-3 text-sm">
-                            <div className="flex justify-between p-3 bg-rose-50 rounded-xl border border-rose-100">
-                                <span className="text-rose-700 font-medium">總資產 (Assets)</span>
-                                <span className="font-bold text-rose-600 font-mono text-base">{bsData.totalAssets.toLocaleString()}</span>
+                            <div className="flex justify-between p-3 bg-blue-50 rounded-xl border border-blue-100">
+                                <span className="text-blue-700 font-medium">總資產 (Assets)</span>
+                                <span className="font-bold text-blue-600 font-mono text-base">{bsData.totalAssets.toLocaleString()}</span>
                             </div>
-                            <div className="flex justify-between p-3 bg-teal-50 rounded-xl border border-teal-100">
-                                <span className="text-teal-700 font-medium">總負債 (Liabilities)</span>
-                                <span className="font-bold text-teal-600 font-mono text-base">{bsData.totalDisplayLiab.toLocaleString()}</span>
+                            <div className="flex justify-between p-3 bg-amber-50 rounded-xl border border-amber-100">
+                                <span className="text-amber-700 font-medium">總負債 (Liabilities)</span>
+                                <span className="font-bold text-amber-600 font-mono text-base">{bsData.totalDisplayLiab.toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
                                 <span className="text-slate-600 font-medium">本期損益 (Equity)</span>
@@ -631,11 +621,11 @@
                         </div>
                         <div className="grid grid-cols-2 gap-6 text-sm">
                             <div>
-                                <h4 className="font-bold text-rose-700 mb-3 border-b border-rose-100 pb-2">收入: {isData.totalIncome.toLocaleString()}</h4>
+                                <h4 className="font-bold text-blue-700 mb-3 border-b border-blue-100 pb-2">收入: {isData.totalIncome.toLocaleString()}</h4>
                                 {isData.incomeList.map(i => <div key={i.name} className="flex justify-between text-xs py-1.5 text-slate-600"><span>{i.name}</span><span className="text-asset font-mono">{i.amount.toLocaleString()}</span></div>)}
                             </div>
                             <div>
-                                <h4 className="font-bold text-teal-700 mb-3 border-b border-teal-100 pb-2">支出: {isData.totalExpense.toLocaleString()}</h4>
+                                <h4 className="font-bold text-amber-700 mb-3 border-b border-amber-100 pb-2">支出: {isData.totalExpense.toLocaleString()}</h4>
                                 {isData.expenseList.map(i => <div key={i.name} className="flex justify-between text-xs py-1.5 text-slate-600"><span>{i.name}</span><span className="text-liab font-mono">{i.amount.toLocaleString()}</span></div>)}
                             </div>
                         </div>
@@ -645,8 +635,8 @@
 
             const renderAccounts = () => {
                 const sectionStyle = (key) => {
-                    if (key === 'ASSETS' || key === 'INCOME') return { header: 'text-rose-700 bg-rose-50', icon: 'bg-rose-400 text-white' };
-                    return { header: 'text-teal-700 bg-teal-50', icon: 'bg-teal-400 text-white' };
+                    if (key === 'ASSETS' || key === 'INCOME') return { header: 'text-blue-700 bg-blue-50', icon: 'bg-blue-500 text-white' };
+                    return { header: 'text-amber-700 bg-amber-50', icon: 'bg-amber-500 text-white' };
                 };
 
                 return (
@@ -664,7 +654,7 @@
                                 {categories[key].map(acc => (
                                     <div key={acc} className="flex justify-between items-center py-2.5 px-3 border-b last:border-0 border-slate-50 hover:bg-slate-50 rounded-lg transition-colors group">
                                         <span className="text-sm text-slate-600">{acc}</span>
-                                        <button onClick={() => handleDeleteAccount(key, acc)} className="text-slate-300 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"><Icons.X /></button>
+                                        <button onClick={() => handleDeleteAccount(key, acc)} className="text-slate-300 hover:text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity"><Icons.X /></button>
                                     </div>
                                 ))}
                             </div>
@@ -680,7 +670,7 @@
                         
                         <div className="space-y-6">
                             <div>
-                                <h4 className="text-xs font-bold text-rose-700 bg-rose-50 p-2 rounded-lg mb-3 inline-block px-3">資產 (Assets)</h4>
+                                <h4 className="text-xs font-bold text-blue-700 bg-blue-50 p-2 rounded-lg mb-3 inline-block px-3">資產 (Assets)</h4>
                                 <div className="space-y-3 pl-1">
                                     {categories.ASSETS.map(acc => (
                                         <div key={acc} className="flex justify-between items-center border-b border-slate-50 last:border-0 pb-2">
@@ -692,13 +682,13 @@
                             </div>
 
                             <div>
-                                <h4 className="text-xs font-bold text-teal-700 bg-teal-50 p-2 rounded-lg mb-3 inline-block px-3">負債 (Liabilities)</h4>
+                                <h4 className="text-xs font-bold text-amber-700 bg-amber-50 p-2 rounded-lg mb-3 inline-block px-3">負債 (Liabilities)</h4>
                                 <p className="text-[10px] text-slate-400 mb-2 px-1">* 請輸入負數表示欠款</p>
                                 <div className="space-y-3 pl-1">
                                     {categories.LIABILITIES.map(acc => (
                                         <div key={acc} className="flex justify-between items-center border-b border-slate-50 last:border-0 pb-2">
                                             <label className="text-xs text-slate-600 flex-1">{acc}</label>
-                                            <input type="number" value={openingBalances[acc] !== undefined ? openingBalances[acc] : 0} onChange={e => setOpeningBalances({...openingBalances, [acc]: parseFloat(e.target.value) || 0})} className="border rounded-lg p-1.5 text-sm w-32 text-right font-mono bg-slate-50 focus:bg-white text-teal-600 transition-colors" placeholder="0" />
+                                            <input type="number" value={openingBalances[acc] !== undefined ? openingBalances[acc] : 0} onChange={e => setOpeningBalances({...openingBalances, [acc]: parseFloat(e.target.value) || 0})} className="border rounded-lg p-1.5 text-sm w-32 text-right font-mono bg-slate-50 focus:bg-white text-amber-600 transition-colors" placeholder="0" />
                                         </div>
                                     ))}
                                 </div>
@@ -754,12 +744,12 @@
                                         </div>
                                     </div>
                                     <input type="file" accept=".csv" multiple ref={csvInputRef} onChange={handleImportCSV} style={{ display: 'none' }} />
-                                    <button onClick={triggerCsvInput} className="w-full flex items-center justify-between p-4 bg-teal-50 border border-teal-100 rounded-xl hover:bg-teal-100 transition">
+                                    <button onClick={triggerCsvInput} className="w-full flex items-center justify-between p-4 bg-emerald-50 border border-emerald-100 rounded-xl hover:bg-emerald-100 transition">
                                         <div className="flex flex-col items-start">
-                                            <span className="text-sm font-bold text-teal-700">匯入舊版交易紀錄 (.csv)</span>
-                                            <span className="text-xs text-teal-600/70">支援多檔選取</span>
+                                            <span className="text-sm font-bold text-emerald-700">匯入舊版交易紀錄 (.csv)</span>
+                                            <span className="text-xs text-emerald-600/70">支援多檔選取</span>
                                         </div>
-                                        <span className="text-teal-500 bg-white p-2 rounded-full"><Icons.FilePlus /></span>
+                                        <span className="text-emerald-500 bg-white p-2 rounded-full"><Icons.FilePlus /></span>
                                     </button>
                                 </div>
                             </div>
