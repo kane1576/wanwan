@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -7,12 +7,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="記帳簿">
-    <title>個人會計記帳系統 </title>
+    <title>個人會計記帳系統 V2023</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <!-- 修正: 升級 Babel 到最新版以支援現代語法 -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
@@ -23,11 +24,21 @@
         }
         /* 優化 iOS 滾動體驗 */
         .overflow-y-auto { -webkit-overflow-scrolling: touch; }
-        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+        .tab-active { border-bottom: 2px solid #ef4444; color: #ef4444; font-weight: 600; } /* Active tab red */
         .tab-inactive { color: #6b7280; }
         
         /* iPhone X+ 底部安全區域 */
         .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+        /* 自定義顏色類別 (符合用戶需求) */
+        .text-asset { color: #dc2626; } /* 紅色 */
+        .bg-asset { background-color: #fef2f2; }
+        .text-income { color: #dc2626; } /* 紅色 */
+        .bg-income { background-color: #fef2f2; }
+        .text-liab { color: #16a34a; } /* 綠色 */
+        .bg-liab { background-color: #f0fdf4; }
+        .text-expense { color: #16a34a; } /* 綠色 */
+        .bg-expense { background-color: #f0fdf4; }
     </style>
 </head>
 <body>
@@ -51,7 +62,10 @@
             Download: () => <i data-lucide="download" className="w-4 h-4"></i>,
             Upload: () => <i data-lucide="upload" className="w-4 h-4"></i>,
             FileText: () => <i data-lucide="file-text" className="w-4 h-4"></i>,
-            AlertTriangle: () => <i data-lucide="alert-triangle" className="w-4 h-4"></i>
+            AlertTriangle: () => <i data-lucide="alert-triangle" className="w-4 h-4"></i>,
+            Edit: () => <i data-lucide="edit-2" className="w-4 h-4"></i>,
+            Check: () => <i data-lucide="check" className="w-4 h-4"></i>,
+            FilePlus: () => <i data-lucide="file-plus" className="w-4 h-4"></i>
         };
 
         // --- 預設資料 (若無存檔時使用) ---
@@ -59,12 +73,14 @@
             ASSETS: [
                 "現金-錢包-台幣", "現金-Line-台幣", "現金-悠遊卡-台新", "現金-悠遊卡-花旗",
                 "銀行存款-渣打-台幣", "銀行存款-台新-台幣", "銀行存款-國泰-台幣", "銀行存款-國泰-外幣", "銀行存款-元大-台幣",
-                "應收帳款-公司",
+                "應收帳款-公司-美甲社", "應收帳款-私人-媽媽", "應收帳款-私人-瑋",
                 "股票投資-台股-成本", "股票投資-台股-評價",
                 "儲蓄險-祿美利利-外幣", "儲蓄險-雋美年年-外幣", "儲蓄險-樂事年年-台幣", "儲蓄險-祿美佳-外幣",
+                "預付款項-健身教練", "預付款項-羽球場", "預付款項-麥當勞"
             ],
             LIABILITIES: [
-                "信用卡-台新-Richart", "信用卡-國泰-cube", "信用卡-花旗-現金回饋", "信用卡-富邦-momo", "信用卡-元大-鑽金", "應付帳款-其他", "未實現-台股-評價"
+                "信用卡-台新-Richart", "信用卡-國泰-蝦皮/koko", "信用卡-花旗-現金回饋", "信用卡-富邦-momo", "信用卡-元大-鑽金",
+                "應付帳款-Brian", "應付帳款-其他", "未實現-台股-評價"
             ],
             INCOME: [
                 "薪資", "利息收入", "股利收入", "獎金", "投資收益", "其他收入"
@@ -81,11 +97,11 @@
         // 根據 BS_20230103.csv 設定完整期初餘額
         const DEFAULT_OPENING_BALANCES = {
             // 資產 (Assets)
-            "現金-錢包-台幣": 0,
-            "現金-Line-台幣": 0,
-            "現金-悠遊卡-台新": 0,
-            "現金-悠遊卡-花旗": 0,
-            "銀行存款-渣打-台幣": 0,
+            "現金-錢包-台幣": 1260,
+            "現金-Line-台幣": 6129,
+            "現金-悠遊卡-台新": 335,
+            "現金-悠遊卡-花旗": 493,
+            "銀行存款-渣打-台幣": 112247,
             "銀行存款-台新-台幣": 0,
             "銀行存款-國泰-台幣": 0,
             "銀行存款-國泰-外幣": 0,
@@ -104,10 +120,10 @@
             "預付款項-麥當勞": 0,
 
             // 負債 (Liabilities) - 負數表示
-            "信用卡-台新-Richart": 0,
-            "信用卡-國泰-蝦皮/koko": 0,
-            "信用卡-花旗-現金回饋": 0,
-            "信用卡-富邦-momo": 0,
+            "信用卡-台新-Richart": -7506,
+            "信用卡-國泰-蝦皮/koko": -69,
+            "信用卡-花旗-現金回饋": -29610,
+            "信用卡-富邦-momo": -21168,
             "信用卡-元大-鑽金": 0,
             "應付帳款-Brian": 0,
             "應付帳款-其他": 0,
@@ -140,6 +156,12 @@
             const [crAccount, setCrAccount] = useState(""); 
             const [amount, setAmount] = useState("");
             const [description, setDescription] = useState("");
+            const [isCsvUtf8, setIsCsvUtf8] = useState(true); // 新增：CSV 編碼選擇
+            
+            // 編輯模式 State
+            const [editingId, setEditingId] = useState(null);
+            const [editDescription, setEditDescription] = useState("");
+            const [editAmount, setEditAmount] = useState("");
             
             // 新增：交易列表篩選狀態
             const [filterAccount, setFilterAccount] = useState("");
@@ -150,10 +172,11 @@
 
             // 檔案上傳 ref
             const fileInputRef = useRef(null);
+            const csvInputRef = useRef(null);
 
             useEffect(() => {
                 if (window.lucide) window.lucide.createIcons();
-            }, [activeTab, categories, entries, filterAccount]);
+            }, [activeTab, categories, entries, filterAccount, editingId]);
 
             // --- 輔助函式 ---
             const allAccounts = useMemo(() => {
@@ -173,6 +196,26 @@
                 return '其他';
             };
 
+            // 根據類型返回顏色樣式 (符合使用者需求：紅=資產/收入，綠=負債/支出)
+            const getAccountStyle = (accountName) => {
+                const type = getAccountType(accountName);
+                switch (type) {
+                    case '資產': return 'text-asset bg-asset'; // 紅
+                    case '收入': return 'text-income bg-income'; // 紅
+                    case '負債': return 'text-liab bg-liab'; // 綠
+                    case '支出': return 'text-expense bg-expense'; // 綠
+                    default: return 'text-gray-600 bg-gray-100';
+                }
+            };
+            
+            const getAmountStyle = (val) => {
+                // 正數顯示黑/紅，負數顯示綠? 這裡我們保持資產負債表的邏輯
+                // 但為了報表清晰，我們統一：
+                // 正數 (Assets, Expenses) 
+                // 負數 (Liab, Income)
+                return val < 0 ? 'text-green-600' : 'text-red-600';
+            };
+
             // --- 邏輯處理 ---
             const handleAddEntry = (e) => {
                 e.preventDefault();
@@ -182,20 +225,76 @@
                 }
                 const numAmount = parseFloat(amount);
                 const id = Date.now();
+                
+                // 借方分錄 (通常是正數)
                 const drEntry = { id: id, date: newDate, account: drAccount, amount: numAmount, description: description };
+                // 貸方分錄 (通常是負數)
                 const crEntry = { id: id + 1, date: newDate, account: crAccount, amount: -numAmount, description: description };
 
                 setEntries([drEntry, crEntry, ...entries]);
                 setAmount("");
                 setDescription("");
-                alert("已儲存！");
+                // alert("已儲存！"); // 移除 alert 讓體驗更順暢
             };
 
             const handleDeleteEntry = (id) => {
-                if(confirm("確定要刪除這筆分錄嗎？建議同時刪除對應的借/貸分錄。")) {
+                if(confirm("確定要刪除這筆分錄嗎？建議同時檢查是否有對應的借/貸分錄。")) {
                     setEntries(entries.filter(e => e.id !== id));
                 }
             };
+
+            // --- 編輯功能邏輯 ---
+            const startEditing = (entry) => {
+                setEditingId(entry.id);
+                setEditDescription(entry.description || "");
+                // 顯示金額絕對值，方便編輯
+                setEditAmount(Math.abs(entry.amount));
+            };
+
+            const cancelEditing = () => {
+                setEditingId(null);
+                setEditDescription("");
+                setEditAmount("");
+            };
+
+            const saveEditing = (id) => {
+                const targetEntry = entries.find(e => e.id === id);
+                if (!targetEntry) return;
+
+                const newAmt = parseFloat(editAmount);
+                // 保持原本的正負號
+                const finalAmt = targetEntry.amount >= 0 ? newAmt : -newAmt;
+
+                // 嘗試尋找對應分錄 (同一時間建立，金額相反，摘要相同)
+                // 這是一個簡單的 heuristic，不保證 100% 準確，但對單機版足夠好用
+                // 邏輯：ID 差 1 (因為建立時是 id, id+1)，且金額互為相反數
+                let partnerId = null;
+                const partnerCandidates = entries.filter(e => 
+                    Math.abs(e.id - id) <= 5 && // ID 接近
+                    e.date === targetEntry.date && 
+                    e.amount === -targetEntry.amount
+                );
+                
+                if (partnerCandidates.length === 1) {
+                    partnerId = partnerCandidates[0].id;
+                }
+
+                setEntries(prevEntries => prevEntries.map(e => {
+                    // 更新目標分錄
+                    if (e.id === id) {
+                        return { ...e, description: editDescription, amount: finalAmt };
+                    }
+                    // 如果找到對應分錄，且使用者修改了金額，我們嘗試連動更新
+                    if (e.id === partnerId && finalAmt !== targetEntry.amount) {
+                        // 對應分錄金額應為相反數
+                        return { ...e, description: editDescription, amount: -finalAmt };
+                    }
+                    return e;
+                }));
+
+                setEditingId(null);
+            };
+
 
             const handleAddAccount = (categoryKey) => {
                 const name = newAccountInputs[categoryKey].trim();
@@ -235,7 +334,6 @@
                 const jsonString = JSON.stringify(data, null, 2);
                 const blob = new Blob([jsonString], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
-                
                 const link = document.createElement('a');
                 link.href = url;
                 link.download = `記帳簿備份_${new Date().toISOString().slice(0,10)}.json`;
@@ -245,17 +343,14 @@
             };
 
             const exportToCSV = () => {
-                // BOM for Excel to recognize UTF-8
                 const bom = "\uFEFF";
                 const headers = "ID,日期,會計科目,金額,摘要\n";
                 const rows = entries.map(e => 
                     `${e.id},${e.date},${e.account},${e.amount},"${e.description || ''}"`
                 ).join("\n");
-                
                 const csvContent = bom + headers + rows;
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
-                
                 const link = document.createElement('a');
                 link.href = url;
                 link.download = `記帳明細_${new Date().toISOString().slice(0,10)}.csv`;
@@ -268,17 +363,13 @@
             const handleImportJSON = (event) => {
                 const file = event.target.files[0];
                 if (!file) return;
-
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     try {
                         const importedData = JSON.parse(e.target.result);
-                        
-                        // 簡單的驗證
                         if (!importedData.categories || !importedData.entries || !importedData.openingBalances) {
                             throw new Error("格式錯誤：找不到必要的資料欄位");
                         }
-
                         if(confirm(`準備匯入備份檔，這將會：\n1. 覆蓋目前的設定\n2. 載入 ${importedData.entries.length} 筆交易紀錄\n\n確定要繼續嗎？`)) {
                             setCategories(importedData.categories);
                             setEntries(importedData.entries);
@@ -288,15 +379,103 @@
                     } catch (error) {
                         alert("匯入失敗：檔案格式錯誤或損毀。\n" + error.message);
                     }
-                    // 清空 input 讓同一檔案可重複選取
                     event.target.value = '';
                 };
                 reader.readAsText(file);
             };
 
-            const triggerFileInput = () => {
-                fileInputRef.current.click();
+            // --- CSV 匯入功能 (新增) ---
+            const handleImportCSV = (event) => {
+                const files = event.target.files;
+                if (!files || files.length === 0) return;
+
+                // 累計匯入的紀錄
+                let newEntries = [];
+                let processedCount = 0;
+
+                // 處理單個檔案
+                const processFile = (file) => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const text = e.target.result;
+                            const lines = text.split(/\r\n|\n/);
+                            const parsed = [];
+                            
+                            // 簡單的 CSV 解析 (假設標頭在第一行)
+                            // 標頭: 日期,會計科目,金額,摘要...
+                            // 索引: 0, 1, 2, 3
+                            
+                            let isHeader = true;
+                            lines.forEach((line) => {
+                                if (!line.trim()) return;
+                                
+                                // 處理逗號分隔，忽略引號內的逗號 (簡單版)
+                                const row = line.split(',');
+                                
+                                if (isHeader) {
+                                    // 檢查是否為標頭行，如果是則跳過
+                                    if (row[0].includes('日期') || row[1].includes('會計科目')) {
+                                        isHeader = false;
+                                        return;
+                                    }
+                                    isHeader = false; // 如果第一行不是標頭，直接處理
+                                }
+
+                                // 安全檢查：至少要有日期、科目、金額
+                                if (row.length < 3) return;
+
+                                const date = row[0].trim();
+                                const account = row[1].trim();
+                                const amountStr = row[2].trim();
+                                const desc = row[3] ? row[3].trim() : "";
+
+                                // 驗證日期格式 YYYY-MM-DD
+                                if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+
+                                const amount = parseFloat(amountStr);
+                                if (isNaN(amount)) return;
+
+                                parsed.push({
+                                    id: Date.now() + Math.random(), // 臨時 ID
+                                    date: date,
+                                    account: account,
+                                    amount: amount,
+                                    description: desc
+                                });
+                            });
+                            resolve(parsed);
+                        };
+                        
+                        // 根據選項決定編碼
+                        const encoding = isCsvUtf8 ? 'UTF-8' : 'Big5';
+                        reader.readAsText(file, encoding);
+                    });
+                };
+
+                // 依序處理所有檔案
+                Promise.all(Array.from(files).map(processFile)).then((results) => {
+                    const allParsed = results.flat();
+                    
+                    if (allParsed.length === 0) {
+                        alert("匯入失敗：未讀取到有效資料。請確認檔案格式是否正確，或嘗試切換編碼 (UTF-8 / Big5)。");
+                        return;
+                    }
+
+                    if (confirm(`成功讀取 ${allParsed.length} 筆交易紀錄。\n是否確定要匯入並「附加」到現有紀錄中？`)) {
+                        // 合併並排序
+                        const merged = [...entries, ...allParsed].sort((a, b) => {
+                            return new Date(b.date) - new Date(a.date);
+                        });
+                        setEntries(merged);
+                        alert("匯入完成！");
+                    }
+                    event.target.value = ''; // 重置 input
+                });
             };
+
+            const triggerFileInput = () => fileInputRef.current.click();
+            const triggerCsvInput = () => csvInputRef.current.click();
 
              // --- 報表計算 ---
             const currentBalances = useMemo(() => {
@@ -344,10 +523,9 @@
             }, [entries, reportMonth, categories]);
 
 
-            // --- UI Renders (Mobile Optimized) ---
+            // --- UI Renders ---
 
             const renderJournal = () => {
-                // 篩選邏輯
                 const filteredEntries = filterAccount 
                     ? entries.filter(e => e.account === filterAccount)
                     : entries;
@@ -356,7 +534,7 @@
                 <div className="space-y-4 pb-24">
                     <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                         <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <div className="bg-blue-100 p-1.5 rounded-lg text-blue-600"><Icons.Plus /></div> 新增交易
+                            <div className="bg-red-100 p-1.5 rounded-lg text-red-600"><Icons.Plus /></div> 新增交易
                         </h3>
                         <form onSubmit={handleAddEntry} className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
@@ -375,18 +553,20 @@
                                     <label className="text-xs font-medium text-gray-500 mb-1 block">借方 (流入/費用)</label>
                                     <select value={drAccount} onChange={e => setDrAccount(e.target.value)} className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm appearance-none" required>
                                         <option value="">選擇...</option>
-                                        <optgroup label="費用">{categories.EXPENSES.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
-                                        <optgroup label="資產">{categories.ASSETS.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
-                                        <optgroup label="負債">{categories.LIABILITIES.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
+                                        <optgroup label="資產 (Assets)">{categories.ASSETS.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
+                                        <optgroup label="費用 (Expenses)">{categories.EXPENSES.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
+                                        <optgroup label="負債 (Liabilities)">{categories.LIABILITIES.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
+                                        <optgroup label="收入 (Income)">{categories.INCOME.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
                                     </select>
                                 </div>
                                 <div>
                                     <label className="text-xs font-medium text-gray-500 mb-1 block">貸方 (流出/收入)</label>
                                     <select value={crAccount} onChange={e => setCrAccount(e.target.value)} className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm appearance-none" required>
                                         <option value="">選擇...</option>
-                                        <optgroup label="資產">{categories.ASSETS.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
-                                        <optgroup label="負債">{categories.LIABILITIES.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
-                                        <optgroup label="收入">{categories.INCOME.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
+                                        <optgroup label="資產 (Assets)">{categories.ASSETS.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
+                                        <optgroup label="費用 (Expenses)">{categories.EXPENSES.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
+                                        <optgroup label="負債 (Liabilities)">{categories.LIABILITIES.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
+                                        <optgroup label="收入 (Income)">{categories.INCOME.map(a => <option key={a} value={a}>{a}</option>)}</optgroup>
                                     </select>
                                 </div>
                             </div>
@@ -396,7 +576,7 @@
                                     <label className="text-xs font-medium text-gray-500 mb-1 block">摘要</label>
                                     <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="例如: 午餐" className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm" />
                                 </div>
-                                <button type="submit" className="bg-blue-600 text-white p-2.5 rounded-lg shadow-lg shadow-blue-200 active:scale-95 transition-transform flex items-center justify-center h-[42px] w-[42px]">
+                                <button type="submit" className="bg-red-600 text-white p-2.5 rounded-lg shadow-lg shadow-red-200 active:scale-95 transition-transform flex items-center justify-center h-[42px] w-[42px]">
                                     <Icons.Save />
                                 </button>
                             </div>
@@ -405,7 +585,7 @@
 
                     <div className="space-y-3">
                         <div className="flex justify-between items-center px-1">
-                             <h3 className="font-bold text-gray-700 text-sm">最近交易</h3>
+                             <h3 className="font-bold text-gray-700 text-sm">最近交易 (可編輯)</h3>
                              <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
                                 <Icons.Filter />
                                 <select 
@@ -424,19 +604,51 @@
 
                         {filteredEntries.slice(0, 50).map(entry => (
                             <div key={entry.id} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center">
-                                <div className="flex flex-col gap-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{entry.date.slice(5)}</span>
-                                        <span className="text-sm font-medium text-gray-800">{entry.account}</span>
+                                {editingId === entry.id ? (
+                                    <div className="flex flex-col w-full gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <input 
+                                                type="text" 
+                                                value={editDescription} 
+                                                onChange={e => setEditDescription(e.target.value)} 
+                                                className="flex-1 border p-1 rounded text-sm"
+                                                placeholder="摘要"
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <input 
+                                                type="number" 
+                                                value={editAmount} 
+                                                onChange={e => setEditAmount(e.target.value)} 
+                                                className="w-24 border p-1 rounded text-sm text-right"
+                                                placeholder="金額"
+                                            />
+                                            <div className="flex gap-2">
+                                                <button onClick={() => saveEditing(entry.id)} className="bg-green-100 text-green-600 p-1.5 rounded"><Icons.Check /></button>
+                                                <button onClick={cancelEditing} className="bg-gray-100 text-gray-600 p-1.5 rounded"><Icons.X /></button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <span className="text-xs text-gray-500 truncate max-w-[150px]">{entry.description || '-'}</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <span className={`text-base font-mono font-bold ${entry.amount > 0 ? 'text-gray-800' : 'text-red-500'}`}>
-                                        {entry.amount > 0 ? entry.amount.toLocaleString() : Math.abs(entry.amount).toLocaleString()}
-                                    </span>
-                                    <button onClick={() => handleDeleteEntry(entry.id)} className="text-gray-300 hover:text-red-500 p-1"><Icons.Trash /></button>
-                                </div>
+                                ) : (
+                                    <React.Fragment>
+                                        <div className="flex flex-col gap-1 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{entry.date.slice(5)}</span>
+                                                <span className={`text-xs px-1.5 py-0.5 rounded ${getAccountStyle(entry.account)}`}>{entry.account}</span>
+                                            </div>
+                                            <span className="text-sm text-gray-700 truncate max-w-[150px]">{entry.description || '-'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className={`text-base font-mono font-bold ${entry.amount >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                                {Math.abs(entry.amount).toLocaleString()}
+                                            </span>
+                                            <div className="flex gap-1">
+                                                <button onClick={() => startEditing(entry)} className="text-gray-300 hover:text-blue-500 p-1"><Icons.Edit /></button>
+                                                <button onClick={() => handleDeleteEntry(entry.id)} className="text-gray-300 hover:text-red-500 p-1"><Icons.Trash /></button>
+                                            </div>
+                                        </div>
+                                    </React.Fragment>
+                                )}
                             </div>
                         ))}
                         {filteredEntries.length === 0 && (
@@ -456,24 +668,24 @@
                             <h3 className="font-bold text-gray-800 flex items-center gap-2"><Icons.BookOpen /> 資產負債表</h3>
                         </div>
                         <div className="space-y-3 text-sm">
-                            <div className="flex justify-between p-2 bg-green-50 rounded"><span>總資產</span><span className="font-bold text-green-700">{bsData.totalAssets.toLocaleString()}</span></div>
-                            <div className="flex justify-between p-2 bg-red-50 rounded"><span>總負債</span><span className="font-bold text-red-700">{bsData.totalDisplayLiab.toLocaleString()}</span></div>
-                            <div className="flex justify-between p-2 bg-blue-50 rounded"><span>本期損益</span><span className={`font-bold ${bsData.equity >= 0 ? 'text-blue-700' : 'text-red-700'}`}>{bsData.equity.toLocaleString()}</span></div>
+                            <div className="flex justify-between p-2 bg-red-50 rounded"><span>總資產</span><span className="font-bold text-red-700">{bsData.totalAssets.toLocaleString()}</span></div>
+                            <div className="flex justify-between p-2 bg-green-50 rounded"><span>總負債</span><span className="font-bold text-green-700">{bsData.totalDisplayLiab.toLocaleString()}</span></div>
+                            <div className="flex justify-between p-2 bg-gray-50 rounded"><span>本期損益</span><span className={`font-bold ${bsData.equity >= 0 ? 'text-red-700' : 'text-green-700'}`}>{bsData.equity.toLocaleString()}</span></div>
                             
                             {/* 資產明細 */}
                             <div className="mt-4 pt-3 border-t">
-                                <h4 className="text-xs text-gray-500 mb-2">資產明細</h4>
-                                {bsData.assets.map(a => <div key={a.name} className="flex justify-between py-1 text-gray-600"><span>{a.name}</span><span>{a.amount.toLocaleString()}</span></div>)}
+                                <h4 className="text-xs text-gray-500 mb-2">資產明細 (Assets)</h4>
+                                {bsData.assets.map(a => <div key={a.name} className="flex justify-between py-1 text-gray-600"><span>{a.name}</span><span className="text-red-600">{a.amount.toLocaleString()}</span></div>)}
                             </div>
 
-                            {/* 新增: 負債明細 */}
+                            {/* 負債明細 */}
                             <div className="mt-4 pt-3 border-t">
-                                <h4 className="text-xs text-gray-500 mb-2">負債明細</h4>
+                                <h4 className="text-xs text-gray-500 mb-2">負債明細 (Liabilities)</h4>
                                 {bsData.liabilities.length > 0 ? (
                                     bsData.liabilities.map(l => (
                                         <div key={l.name} className="flex justify-between py-1 text-gray-600">
                                             <span>{l.name}</span>
-                                            <span className="text-red-500">{l.amount.toLocaleString()}</span>
+                                            <span className="text-green-600">{l.amount.toLocaleString()}</span>
                                         </div>
                                     ))
                                 ) : (
@@ -490,31 +702,38 @@
                         </div>
                         <div className="text-center py-4 bg-gray-50 rounded-lg mb-4">
                             <span className="text-xs text-gray-500 block mb-1">本月淨利</span>
-                            <span className={`text-2xl font-bold ${isData.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>{isData.netIncome.toLocaleString()}</span>
+                            <span className={`text-2xl font-bold ${isData.netIncome >= 0 ? 'text-red-600' : 'text-green-600'}`}>{isData.netIncome.toLocaleString()}</span>
                         </div>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
-                                <h4 className="font-bold text-green-700 mb-2 border-b pb-1">收入: {isData.totalIncome.toLocaleString()}</h4>
-                                {isData.incomeList.map(i => <div key={i.name} className="flex justify-between text-xs py-1"><span>{i.name}</span><span>{i.amount.toLocaleString()}</span></div>)}
+                                <h4 className="font-bold text-red-700 mb-2 border-b pb-1">收入: {isData.totalIncome.toLocaleString()}</h4>
+                                {isData.incomeList.map(i => <div key={i.name} className="flex justify-between text-xs py-1"><span>{i.name}</span><span className="text-red-600">{i.amount.toLocaleString()}</span></div>)}
                             </div>
                             <div>
-                                <h4 className="font-bold text-red-700 mb-2 border-b pb-1">支出: {isData.totalExpense.toLocaleString()}</h4>
-                                {isData.expenseList.map(i => <div key={i.name} className="flex justify-between text-xs py-1"><span>{i.name}</span><span>{i.amount.toLocaleString()}</span></div>)}
+                                <h4 className="font-bold text-green-700 mb-2 border-b pb-1">支出: {isData.totalExpense.toLocaleString()}</h4>
+                                {isData.expenseList.map(i => <div key={i.name} className="flex justify-between text-xs py-1"><span>{i.name}</span><span className="text-green-600">{i.amount.toLocaleString()}</span></div>)}
                             </div>
                         </div>
                     </div>
                 </div>
             );
 
-            const renderAccounts = () => (
+            const renderAccounts = () => {
+                // 定義區塊顏色 (紅=資產/收入, 綠=負債/支出)
+                const sectionStyle = (key) => {
+                    if (key === 'ASSETS' || key === 'INCOME') return { header: 'text-red-700 bg-red-50', icon: 'bg-red-500 text-white' };
+                    return { header: 'text-green-700 bg-green-50', icon: 'bg-green-500 text-white' };
+                };
+
+                return (
                 <div className="space-y-4 pb-24">
                      {['ASSETS', 'LIABILITIES', 'INCOME', 'EXPENSES'].map(key => (
                         <div key={key} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="p-3 bg-gray-50 border-b flex justify-between items-center">
-                                <span className="font-bold text-sm text-gray-700">{key === 'ASSETS' ? '資產' : key === 'LIABILITIES' ? '負債' : key === 'INCOME' ? '收入' : '支出'}</span>
+                            <div className={`p-3 border-b flex justify-between items-center ${sectionStyle(key).header}`}>
+                                <span className="font-bold text-sm">{key === 'ASSETS' ? '資產' : key === 'LIABILITIES' ? '負債' : key === 'INCOME' ? '收入' : '支出'}</span>
                                 <div className="flex gap-2">
-                                    <input type="text" placeholder="新增..." value={newAccountInputs[key]} onChange={e => setNewAccountInputs({...newAccountInputs, [key]: e.target.value})} className="text-xs p-1 border rounded w-24" />
-                                    <button onClick={() => handleAddAccount(key)} className="bg-blue-500 text-white px-2 rounded text-xs"><Icons.Plus /></button>
+                                    <input type="text" placeholder="新增..." value={newAccountInputs[key]} onChange={e => setNewAccountInputs({...newAccountInputs, [key]: e.target.value})} className="text-xs p-1 border rounded w-24 bg-white/50" />
+                                    <button onClick={() => handleAddAccount(key)} className={`${sectionStyle(key).icon} px-2 rounded text-xs`}><Icons.Plus /></button>
                                 </div>
                             </div>
                             <div className="p-2 max-h-40 overflow-y-auto">
@@ -528,17 +747,17 @@
                         </div>
                      ))}
                 </div>
-            );
+            )};
             
             const renderSettings = () => (
                 <div className="space-y-6 pb-24">
                     <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                        <h3 className="font-bold text-gray-800 mb-4">期初餘額設定 </h3>
+                        <h3 className="font-bold text-gray-800 mb-4">期初餘額設定 (2023/01/01)</h3>
                         
                         <div className="space-y-6">
-                            {/* 資產區塊 */}
+                            {/* 資產區塊 (紅) */}
                             <div>
-                                <h4 className="text-sm font-bold text-green-700 bg-green-50 p-2 rounded mb-2">資產 (Assets)</h4>
+                                <h4 className="text-sm font-bold text-red-700 bg-red-50 p-2 rounded mb-2">資產 (Assets)</h4>
                                 <div className="space-y-3">
                                     {categories.ASSETS.map(acc => (
                                         <div key={acc} className="flex justify-between items-center border-b border-gray-50 last:border-0 pb-1">
@@ -555,9 +774,9 @@
                                 </div>
                             </div>
 
-                            {/* 負債區塊 */}
+                            {/* 負債區塊 (綠) */}
                             <div>
-                                <h4 className="text-sm font-bold text-red-700 bg-red-50 p-2 rounded mb-2">負債 (Liabilities)</h4>
+                                <h4 className="text-sm font-bold text-green-700 bg-green-50 p-2 rounded mb-2">負債 (Liabilities)</h4>
                                 <p className="text-[10px] text-gray-400 mb-2 px-1">* 請輸入負數表示欠款</p>
                                 <div className="space-y-3">
                                     {categories.LIABILITIES.map(acc => (
@@ -567,7 +786,7 @@
                                                 type="number" 
                                                 value={openingBalances[acc] !== undefined ? openingBalances[acc] : 0} 
                                                 onChange={e => setOpeningBalances({...openingBalances, [acc]: parseFloat(e.target.value) || 0})} 
-                                                className="border rounded p-1.5 text-sm w-32 text-right font-mono text-red-500"
+                                                className="border rounded p-1.5 text-sm w-32 text-right font-mono text-green-600"
                                                 placeholder="0"
                                             />
                                         </div>
@@ -581,14 +800,13 @@
                         </div>
                     </div>
 
-                    {/* 資料管理區塊 (新增匯入功能) */}
+                    {/* 資料管理區塊 */}
                     <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                         <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                             <Icons.Save /> 資料備份與還原
                         </h3>
                         
                         <div className="space-y-4">
-                            {/* 匯出 */}
                             <div className="space-y-2">
                                 <h4 className="text-xs font-bold text-gray-500 uppercase">匯出資料 (Backup)</h4>
                                 <button onClick={exportToJSON} className="w-full flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition group">
@@ -608,7 +826,6 @@
                                 </button>
                             </div>
 
-                            {/* 匯入 */}
                             <div className="border-t pt-4 space-y-2">
                                 <h4 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
                                     匯入資料 (Restore) <Icons.AlertTriangle className="w-3 h-3 text-yellow-500" />
@@ -630,6 +847,39 @@
                                     <span className="text-yellow-600"><Icons.Upload /></span>
                                 </button>
                             </div>
+
+                            <div className="border-t pt-4 space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <h4 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1">
+                                        匯入舊版 Excel CSV
+                                    </h4>
+                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                        <label className="flex items-center gap-1 cursor-pointer">
+                                            <input type="radio" checked={isCsvUtf8} onChange={() => setIsCsvUtf8(true)} /> UTF-8
+                                        </label>
+                                        <label className="flex items-center gap-1 cursor-pointer">
+                                            <input type="radio" checked={!isCsvUtf8} onChange={() => setIsCsvUtf8(false)} /> Big5
+                                        </label>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-gray-400 mb-2">支援匯入您之前的 JE_*.csv 檔案。若文字亂碼請切換 Big5。</p>
+                                
+                                <input 
+                                    type="file" 
+                                    accept=".csv" 
+                                    multiple
+                                    ref={csvInputRef} 
+                                    onChange={handleImportCSV} 
+                                    style={{ display: 'none' }} 
+                                />
+                                <button onClick={triggerCsvInput} className="w-full flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition dashed-border">
+                                    <div className="flex flex-col items-start">
+                                        <span className="text-sm font-bold text-green-800">匯入 CSV 交易紀錄</span>
+                                        <span className="text-xs text-green-700/70">可多選檔案</span>
+                                    </div>
+                                    <span className="text-green-600"><Icons.FilePlus /></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -638,7 +888,7 @@
             return (
                 <div className="min-h-screen bg-gray-50 safe-area-bottom">
                     <div className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b px-4 py-3 shadow-sm">
-                        <h1 className="text-lg font-bold text-center text-gray-800">記帳簿 <span className="text-xs font-normal text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">App</span></h1>
+                        <h1 className="text-lg font-bold text-center text-gray-800">記帳簿 <span className="text-xs font-normal text-red-600 bg-red-50 px-2 py-0.5 rounded-full">App</span></h1>
                     </div>
 
                     <div className="p-4">
@@ -650,19 +900,19 @@
 
                     {/* Mobile Bottom Navigation */}
                     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-2 pb-6 safe-area-bottom flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-                        <button onClick={() => setActiveTab('journal')} className={`flex flex-col items-center gap-1 ${activeTab === 'journal' ? 'text-blue-600' : 'text-gray-400'}`}>
+                        <button onClick={() => setActiveTab('journal')} className={`flex flex-col items-center gap-1 ${activeTab === 'journal' ? 'text-red-600' : 'text-gray-400'}`}>
                             <div className="p-1"><Icons.Plus /></div>
                             <span className="text-[10px] font-medium">記帳</span>
                         </button>
-                        <button onClick={() => setActiveTab('reports')} className={`flex flex-col items-center gap-1 ${activeTab === 'reports' ? 'text-blue-600' : 'text-gray-400'}`}>
+                        <button onClick={() => setActiveTab('reports')} className={`flex flex-col items-center gap-1 ${activeTab === 'reports' ? 'text-red-600' : 'text-gray-400'}`}>
                              <div className="p-1"><Icons.BookOpen /></div>
                             <span className="text-[10px] font-medium">報表</span>
                         </button>
-                        <button onClick={() => setActiveTab('accounts')} className={`flex flex-col items-center gap-1 ${activeTab === 'accounts' ? 'text-blue-600' : 'text-gray-400'}`}>
+                        <button onClick={() => setActiveTab('accounts')} className={`flex flex-col items-center gap-1 ${activeTab === 'accounts' ? 'text-red-600' : 'text-gray-400'}`}>
                              <div className="p-1"><Icons.List /></div>
                             <span className="text-[10px] font-medium">科目</span>
                         </button>
-                        <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-blue-600' : 'text-gray-400'}`}>
+                        <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-red-600' : 'text-gray-400'}`}>
                              <div className="p-1"><Icons.Settings /></div>
                             <span className="text-[10px] font-medium">設定</span>
                         </button>
